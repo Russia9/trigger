@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/telebot.v3"
@@ -207,7 +208,13 @@ func main() {
 			return nil
 		}
 
-		find, err := db.Collection("triggers").Find(context.Background(), bson.M{"chat": ctx.Message().Chat.ID, "trigger": ctx.Text()})
+		find, err := db.Collection("triggers").Find(context.Background(),
+			bson.M{"chat": ctx.Message().Chat.ID,
+				"trigger": bson.M{
+					"$regex": primitive.Regex{Pattern: regexp.QuoteMeta(ctx.Text()), Options: "i"},
+				},
+			},
+		)
 		if err != nil {
 			return err
 		}
