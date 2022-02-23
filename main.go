@@ -52,28 +52,45 @@ func main() {
 			return nil
 		}
 
+		var object interface{}
+		var entities telebot.Entities
+
 		if c.Message().ReplyTo.Text != "" {
-			return c.Send(c.Message().ReplyTo.Text, c.Message().ReplyTo.Entities)
+			object = c.Message().ReplyTo.Text
+			entities = c.Message().ReplyTo.Entities
 		} else if c.Message().ReplyTo.Photo != nil {
 			s := c.Message().ReplyTo.Photo
-			s.Caption = c.Message().ReplyTo.Caption
-			return c.Send(c.Message().ReplyTo.Photo, c.Message().ReplyTo.CaptionEntities)
+			s.Caption = c.Message().Caption
+			object = s
+			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Animation != nil {
-			return c.Send(c.Message().ReplyTo.Animation)
+			s := c.Message().ReplyTo.Animation
+			s.Caption = c.Message().Caption
+			object = s
+			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Video != nil {
-			return c.Send(c.Message().ReplyTo.Video)
+			s := c.Message().ReplyTo.Video
+			s.Caption = c.Message().Caption
+			object = s
+			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Voice != nil {
-			return c.Send(c.Message().ReplyTo.Voice)
+			s := c.Message().ReplyTo.Voice
+			s.Caption = c.Message().Caption
+			object = s
+			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.VideoNote != nil {
-			return c.Send(c.Message().ReplyTo.VideoNote)
+			object = c.Message().ReplyTo.VideoNote
+			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Sticker != nil {
-			return c.Send(c.Message().ReplyTo.Sticker)
+			object = c.Message().ReplyTo.Sticker
 		} else if c.Message().ReplyTo.Document != nil {
-			return c.Send(c.Message().ReplyTo.Document)
+			s := c.Message().ReplyTo.Document
+			s.Caption = c.Message().Caption
+			object = s
+			entities = c.Message().ReplyTo.CaptionEntities
 		}
 
-		//return c.Send(send)
-		return nil
+		return c.Send(object, entities)
 	})
 
 	b.Start()
