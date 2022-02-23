@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
@@ -19,10 +20,12 @@ import (
 )
 
 type Trigger struct {
-	ID       string `bson:"_id"`
-	Trigger  string
-	Chat     int64
-	Object   interface{}
+	ID      string `bson:"_id"`
+	Trigger string
+	Chat    int64
+
+	Object   []byte
+	Type     string
 	Entities telebot.Entities
 }
 
@@ -71,8 +74,9 @@ func main() {
 	db := client.Database(utils.GetEnv("MONGO_DB", "bot"))
 
 	b, err := telebot.NewBot(telebot.Settings{
-		Token:  os.Getenv("TELEGRAM_TOKEN"),
-		Poller: &telebot.LongPoller{Timeout: time.Second * 10},
+		Token:     os.Getenv("TELEGRAM_TOKEN"),
+		Poller:    &telebot.LongPoller{Timeout: time.Second * 10},
+		ParseMode: telebot.ModeHTML,
 	})
 	if err != nil {
 		log.Fatal().Err(err).Send()
@@ -106,52 +110,55 @@ func main() {
 				return ctx.Send("Не указано имя триггера")
 			}
 
-			var object interface{}
-			var entities telebot.Entities
+			trigger := Trigger{
+				ID:      uuid.New().String(),
+				Trigger: AddCommand.FindAllStringSubmatch(ctx.Text(), -1)[0][1],
+				Chat:    ctx.Message().Chat.ID,
+			}
 
 			if ctx.Message().ReplyTo.Text != "" {
-				object = ctx.Message().ReplyTo.Text
-				entities = ctx.Message().ReplyTo.Entities
+				trigger.Object = []byte(ctx.Message().ReplyTo.Text)
+				trigger.Type = "text"
+				trigger.Entities = ctx.Message().ReplyTo.Entities
 			} else if ctx.Message().ReplyTo.Photo != nil {
 				s := ctx.Message().ReplyTo.Photo
 				s.Caption = ctx.Message().ReplyTo.Caption
-				object = s
-				entities = ctx.Message().ReplyTo.CaptionEntities
+				trigger.Object, _ = json.Marshal(s)
+				trigger.Type = "photo"
+				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else if ctx.Message().ReplyTo.Animation != nil {
 				s := ctx.Message().ReplyTo.Animation
 				s.Caption = ctx.Message().ReplyTo.Caption
-				object = s
-				entities = ctx.Message().ReplyTo.CaptionEntities
+				trigger.Object, _ = json.Marshal(s)
+				trigger.Type = "animation"
+				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else if ctx.Message().ReplyTo.Video != nil {
 				s := ctx.Message().ReplyTo.Video
 				s.Caption = ctx.Message().ReplyTo.Caption
-				object = s
-				entities = ctx.Message().ReplyTo.CaptionEntities
+				trigger.Object, _ = json.Marshal(s)
+				trigger.Type = "video"
+				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else if ctx.Message().ReplyTo.Voice != nil {
 				s := ctx.Message().ReplyTo.Voice
 				s.Caption = ctx.Message().ReplyTo.Caption
-				object = s
-				entities = ctx.Message().ReplyTo.CaptionEntities
+				trigger.Object, _ = json.Marshal(s)
+				trigger.Type = "voice"
+				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else if ctx.Message().ReplyTo.VideoNote != nil {
-				object = ctx.Message().ReplyTo.VideoNote
-				entities = ctx.Message().ReplyTo.CaptionEntities
+				trigger.Object, _ = json.Marshal(ctx.Message().ReplyTo.VideoNote)
+				trigger.Type = "videonote"
+				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else if ctx.Message().ReplyTo.Sticker != nil {
-				object = ctx.Message().ReplyTo.Sticker
+				trigger.Object, _ = json.Marshal(ctx.Message().ReplyTo.Sticker)
+				trigger.Type = "sticker"
 			} else if ctx.Message().ReplyTo.Document != nil {
 				s := ctx.Message().ReplyTo.Document
 				s.Caption = ctx.Message().ReplyTo.Caption
-				object = s
-				entities = ctx.Message().ReplyTo.CaptionEntities
+				trigger.Object, _ = json.Marshal(ctx.Message().ReplyTo.Caption)
+				trigger.Type = "document"
+				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else {
 				return ctx.Send("треш")
-			}
-
-			trigger := Trigger{
-				ID:       uuid.New().String(),
-				Trigger:  AddCommand.FindAllStringSubmatch(ctx.Text(), -1)[0][1],
-				Chat:     ctx.Message().Chat.ID,
-				Object:   object,
-				Entities: entities,
 			}
 
 			_, err = db.Collection("triggers").InsertOne(context.Background(), trigger)
@@ -212,29 +219,37 @@ func main() {
 				return err
 			}
 
-			if object, ok := trigger.Object.(string); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.Photo); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.Animation); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.Video); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.Voice); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.VideoNote); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.Sticker); ok {
-				err = ctx.Send(object, trigger.Entities)
-			}
-			if object, ok := trigger.Object.(*telebot.Document); ok {
-				err = ctx.Send(object, trigger.Entities)
+			switch trigger.Type {
+			case "text":
+				err = ctx.Send(string(trigger.Object), trigger.Entities)
+			case "photo":
+				var photo telebot.Photo
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
+			case "animation":
+				var photo telebot.Animation
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
+			case "video":
+				var photo telebot.Video
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
+			case "voice":
+				var photo telebot.Voice
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
+			case "videonote":
+				var photo telebot.VideoNote
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
+			case "sticker":
+				var photo telebot.Sticker
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
+			case "document":
+				var photo telebot.Document
+				_ = json.Unmarshal(trigger.Object, &photo)
+				err = ctx.Send(&photo, trigger.Entities)
 			}
 
 			if err != nil {
@@ -243,6 +258,31 @@ func main() {
 		}
 
 		return nil
+	})
+
+	b.Handle("+триггеры", func(ctx telebot.Context) error {
+		if !ctx.Message().FromGroup() {
+			return nil
+		}
+
+		find, err := db.Collection("triggers").Find(context.Background(), bson.M{"chat": ctx.Message().Chat.ID})
+		if err != nil {
+			return err
+		}
+
+		var triggers []Trigger
+		err = find.All(context.Background(), &triggers)
+		if err != nil {
+			return err
+		}
+
+		msg := "<b>Список триггеров:</b>\n"
+
+		for i, trigger := range triggers {
+			msg += fmt.Sprintf("%d. %s <i>(%s)</i>\n", i+1, trigger.Trigger, trigger.Type)
+		}
+
+		return ctx.Send(msg)
 	})
 
 	b.Start()
