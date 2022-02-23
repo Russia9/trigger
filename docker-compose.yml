@@ -10,7 +10,7 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-  notices:
+  trigger:
     build: .
     restart: always
     env_file: ".env"
