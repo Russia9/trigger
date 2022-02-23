@@ -60,22 +60,22 @@ func main() {
 			entities = c.Message().ReplyTo.Entities
 		} else if c.Message().ReplyTo.Photo != nil {
 			s := c.Message().ReplyTo.Photo
-			s.Caption = c.Message().Caption
+			s.Caption = c.Message().ReplyTo.Caption
 			object = s
 			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Animation != nil {
 			s := c.Message().ReplyTo.Animation
-			s.Caption = c.Message().Caption
+			s.Caption = c.Message().ReplyTo.Caption
 			object = s
 			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Video != nil {
 			s := c.Message().ReplyTo.Video
-			s.Caption = c.Message().Caption
+			s.Caption = c.Message().ReplyTo.Caption
 			object = s
 			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.Voice != nil {
 			s := c.Message().ReplyTo.Voice
-			s.Caption = c.Message().Caption
+			s.Caption = c.Message().ReplyTo.Caption
 			object = s
 			entities = c.Message().ReplyTo.CaptionEntities
 		} else if c.Message().ReplyTo.VideoNote != nil {
@@ -85,7 +85,7 @@ func main() {
 			object = c.Message().ReplyTo.Sticker
 		} else if c.Message().ReplyTo.Document != nil {
 			s := c.Message().ReplyTo.Document
-			s.Caption = c.Message().Caption
+			s.Caption = c.Message().ReplyTo.Caption
 			object = s
 			entities = c.Message().ReplyTo.CaptionEntities
 		}
