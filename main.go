@@ -211,7 +211,7 @@ func main() {
 		find, err := db.Collection("triggers").Find(context.Background(),
 			bson.M{"chat": ctx.Message().Chat.ID,
 				"trigger": bson.M{
-					"$regex": primitive.Regex{Pattern: regexp.QuoteMeta(ctx.Text()), Options: "i"},
+					"$regex": primitive.Regex{Pattern: "^" + regexp.QuoteMeta(ctx.Text()) + "$", Options: "i"},
 				},
 			},
 		)
