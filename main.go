@@ -80,7 +80,7 @@ func main() {
 		ParseMode: telebot.ModeHTML,
 		OnError: func(err error, ctx telebot.Context) {
 			fmt.Println(err)
-			ctx.Send(fmt.Sprintf("Произошла ошибка, пизданите русю и он может быть ее починит\n\n<code>%s</code>", err.Error()), telebot.ModeHTML)
+			ctx.Reply(fmt.Sprintf("Произошла ошибка, пизданите русю и он может быть ее починит\n\n<code>%s</code>", err.Error()), telebot.ModeHTML)
 		},
 	})
 	if err != nil {
@@ -90,11 +90,11 @@ func main() {
 	b.Handle(telebot.OnText, func(ctx telebot.Context) error {
 		if strings.HasPrefix(ctx.Text(), "+триггер") {
 			if !ctx.Message().FromGroup() {
-				return ctx.Send("Бот работает только в чатах")
+				return ctx.Reply("Бот работает только в чатах")
 			}
 
 			if !ctx.Message().IsReply() {
-				return ctx.Send("Отправьте команду в ответ на сообщение, которое хотите сохранить")
+				return ctx.Reply("Отправьте команду в ответ на сообщение, которое хотите сохранить")
 			}
 
 			member, err := b.ChatMemberOf(ctx.Chat(), ctx.Message().Sender)
@@ -103,11 +103,11 @@ func main() {
 			}
 
 			if member.Role != telebot.Creator && member.Role != telebot.Administrator {
-				return ctx.Send("Добавлять триггеры может только админ")
+				return ctx.Reply("Добавлять триггеры может только админ")
 			}
 
 			if !AddCommand.MatchString(ctx.Text()) {
-				return ctx.Send("Не указано имя триггера")
+				return ctx.Reply("Не указано имя триггера")
 			}
 
 			trigger := Trigger{
@@ -158,7 +158,7 @@ func main() {
 				trigger.Type = "document"
 				trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 			} else {
-				return ctx.Send("треш")
+				return ctx.Reply("треш")
 			}
 
 			_, err = db.Collection("triggers").InsertOne(context.Background(), trigger)
@@ -166,12 +166,12 @@ func main() {
 				return err
 			}
 
-			return ctx.Send("✅ Триггер добавлен")
+			return ctx.Reply("✅ Триггер добавлен")
 		}
 
 		if strings.HasPrefix(ctx.Text(), "-триггер") {
 			if !ctx.Message().FromGroup() {
-				return ctx.Send("Бот работает только в чатах")
+				return ctx.Reply("Бот работает только в чатах")
 			}
 
 			member, err := b.ChatMemberOf(ctx.Chat(), ctx.Message().Sender)
@@ -180,11 +180,11 @@ func main() {
 			}
 
 			if member.Role != telebot.Creator && member.Role != telebot.Administrator {
-				return ctx.Send("Удалять триггеры может только админ")
+				return ctx.Reply("Удалять триггеры может только админ")
 			}
 
 			if !DelCommand.MatchString(ctx.Text()) {
-				return ctx.Send("Не указан триггер, который удаляем")
+				return ctx.Reply("Не указан триггер, который удаляем")
 			}
 
 			count, err := db.Collection("triggers").DeleteMany(context.Background(),
@@ -198,9 +198,9 @@ func main() {
 			}
 
 			if count.DeletedCount == 0 {
-				return ctx.Send("🚫 Триггер не найден")
+				return ctx.Reply("🚫 Триггер не найден")
 			}
-			return ctx.Send("✅ Триггер удален")
+			return ctx.Reply("✅ Триггер удален")
 		}
 
 		if !ctx.Message().FromGroup() {
@@ -227,35 +227,35 @@ func main() {
 
 			switch trigger.Type {
 			case "text":
-				err = ctx.Send(string(trigger.Object), trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(string(trigger.Object), trigger.Entities, telebot.NoPreview)
 			case "photo":
 				var photo telebot.Photo
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			case "animation":
 				var photo telebot.Animation
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			case "video":
 				var photo telebot.Video
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			case "voice":
 				var photo telebot.Voice
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			case "videonote":
 				var photo telebot.VideoNote
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			case "sticker":
 				var photo telebot.Sticker
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			case "document":
 				var photo telebot.Document
 				_ = json.Unmarshal(trigger.Object, &photo)
-				err = ctx.Send(&photo, trigger.Entities, telebot.NoPreview)
+				err = ctx.Reply(&photo, trigger.Entities, telebot.NoPreview)
 			}
 
 			if err != nil {
@@ -288,7 +288,7 @@ func main() {
 			msg += fmt.Sprintf("%d. %s <i>(%s)</i>\n", i+1, trigger.Trigger, trigger.Type)
 		}
 
-		return ctx.Send(msg)
+		return ctx.Reply(msg)
 	})
 
 	b.Start()
