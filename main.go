@@ -78,14 +78,13 @@ func main() {
 		Token:     os.Getenv("TELEGRAM_TOKEN"),
 		Poller:    &telebot.LongPoller{Timeout: time.Second * 10},
 		ParseMode: telebot.ModeHTML,
+		OnError: func(err error, ctx telebot.Context) {
+			fmt.Println(err)
+			ctx.Send(fmt.Sprintf("Произошла ошибка, пизданите русю и он может быть ее починит\n\n<code>%s</code>", err.Error()), telebot.ModeHTML)
+		},
 	})
 	if err != nil {
 		log.Fatal().Err(err).Send()
-	}
-
-	b.OnError = func(err error, ctx telebot.Context) {
-		fmt.Println(err)
-		ctx.Send(fmt.Sprintf("Произошла ошибка, пизданите русю и он может быть ее починит\n\n<code>%s</code>", err.Error()), telebot.ModeHTML)
 	}
 
 	b.Handle(telebot.OnText, func(ctx telebot.Context) error {
