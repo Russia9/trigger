@@ -32,9 +32,7 @@ func (b *Bot) Start() {
 func (b *Bot) Send(ctx telebot.Context, what interface{}, opts ...interface{}) error {
 	if ctx.Message().TopicMessage {
 		_, err := b.bot.Reply(ctx.Message().ReplyTo, what, opts...)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	return ctx.Send(what, opts...)
 }
