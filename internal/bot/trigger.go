@@ -12,6 +12,12 @@ func (b *Bot) Trigger(ctx telebot.Context) error {
 		return nil
 	}
 
+	if AddCommand.MatchString(ctx.Text()) {
+		return b.Add(ctx)
+	} else if DeleteCommand.MatchString(ctx.Text()) {
+		return b.Delete(ctx)
+	}
+
 	// Get triggers from Repository
 	triggers, err := b.repo.Get(context.Background(), ctx.Text(), ctx.Message().Chat.ID)
 	if err != nil {
