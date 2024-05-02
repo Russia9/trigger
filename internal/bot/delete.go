@@ -12,7 +12,7 @@ var DeleteCommand = regexp.MustCompile("-триггер\\s+(.*)")
 func (b *Bot) Delete(ctx telebot.Context) error {
 	// Check if the message is from a group
 	if !ctx.Message().FromGroup() {
-		return ctx.Reply("🚫 Бот работает только в чатах")
+		return b.Send(ctx, "🚫 Бот работает только в чатах")
 	}
 
 	// Get Chat member
@@ -23,12 +23,12 @@ func (b *Bot) Delete(ctx telebot.Context) error {
 
 	// Check if the user is an admin
 	if member.Role != telebot.Creator && member.Role != telebot.Administrator {
-		return ctx.Reply("🚫 Удалять триггеры может только админ")
+		return b.Send(ctx, "🚫 Удалять триггеры может только админ")
 	}
 
 	// Check if the command is valid
 	if !DeleteCommand.MatchString(ctx.Text()) {
-		return ctx.Reply("🚫 Не указан триггер, который нужно удалить")
+		return b.Send(ctx, "🚫 Не указан триггер, который нужно удалить")
 	}
 
 	// Parse command
@@ -41,8 +41,8 @@ func (b *Bot) Delete(ctx telebot.Context) error {
 	}
 
 	if count == 0 {
-		return ctx.Reply("⚠️ Триггер не найден")
+		return b.Send(ctx, "⚠️ Триггер не найден")
 	}
 
-	return ctx.Reply(fmt.Sprintf("✅ Удалено триггеров: %d", count))
+	return b.Send(ctx, fmt.Sprintf("✅ Удалено триггеров: %d", count))
 }

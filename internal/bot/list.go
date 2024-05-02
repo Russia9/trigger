@@ -24,5 +24,5 @@ func (b *Bot) List(ctx telebot.Context) error {
 		msg += fmt.Sprintf("%d. %s <i>(%s)</i>\n", i+1, trigger.Trigger, trigger.Type)
 	}
 
-	return ctx.Reply(msg)
+	return b.Send(ctx, msg)
 }

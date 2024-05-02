@@ -28,3 +28,10 @@ func NewBot(bot *telebot.Bot, repo domain.TriggerRepository) *Bot {
 func (b *Bot) Start() {
 	b.bot.Start()
 }
+
+func (b *Bot) Send(ctx telebot.Context, what interface{}, opts ...interface{}) error {
+	if ctx.Message().TopicMessage {
+		return ctx.Reply(what, opts...)
+	}
+	return ctx.Send(what, opts...)
+}

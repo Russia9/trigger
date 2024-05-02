@@ -14,12 +14,12 @@ var AddCommand = regexp.MustCompile("\\+триггер\\s+(.*)")
 func (b *Bot) Add(ctx telebot.Context) error {
 	// Check if the message is from a group
 	if !ctx.Message().FromGroup() {
-		return ctx.Reply("🚫 Бот работает только в чатах")
+		return b.Send(ctx, "🚫 Бот работает только в чатах")
 	}
 
 	// Check if message is a reply
 	if !ctx.Message().IsReply() {
-		return ctx.Reply("ℹ Отправьте команду в ответ на сообщение, которое хотите сохранить")
+		return b.Send(ctx, "ℹ Отправьте команду в ответ на сообщение, которое хотите сохранить")
 	}
 
 	// Get Chat member
@@ -30,12 +30,12 @@ func (b *Bot) Add(ctx telebot.Context) error {
 
 	// Check if the user is an admin
 	if member.Role != telebot.Creator && member.Role != telebot.Administrator {
-		return ctx.Reply("🚫 Добавлять триггеры может только админ")
+		return b.Send(ctx, "🚫 Добавлять триггеры может только админ")
 	}
 
 	// Check if the command is valid
 	if !AddCommand.MatchString(ctx.Text()) {
-		return ctx.Reply("ℹ Не указано имя триггера")
+		return b.Send(ctx, "ℹ Не указано имя триггера")
 	}
 
 	// Create a new trigger
@@ -98,7 +98,7 @@ func (b *Bot) Add(ctx telebot.Context) error {
 		trigger.Entities = ctx.Message().ReplyTo.CaptionEntities
 	default:
 		// Unsupported
-		return ctx.Reply("треш")
+		return b.Send(ctx, "треш")
 	}
 
 	// Save Trigger to Repository
@@ -107,5 +107,5 @@ func (b *Bot) Add(ctx telebot.Context) error {
 		return err
 	}
 
-	return ctx.Reply("✅ Триггер добавлен")
+	return b.Send(ctx, "✅ Триггер добавлен")
 }
