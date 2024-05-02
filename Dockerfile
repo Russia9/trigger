@@ -13,7 +13,7 @@ RUN go mod download
 COPY . .
 
 # Build app
-RUN go build -o app .
+RUN go build -o app github.com/russia9/trigger/cmd/main
 
 # Run app
 CMD ["./app"]
