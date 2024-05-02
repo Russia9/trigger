@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"github.com/russia9/trigger/pkg/domain"
 	"gopkg.in/telebot.v3"
 )
@@ -30,6 +31,11 @@ func (b *Bot) Start() {
 }
 
 func (b *Bot) Send(ctx telebot.Context, what interface{}, opts ...interface{}) error {
+	if ctx.Message().IsReply() {
+		fmt.Println(ctx.Message().TopicMessage)
+		fmt.Println(ctx.Message().ReplyTo)
+	}
+
 	if ctx.Message().TopicMessage {
 		return ctx.Reply(what, opts...)
 	}
