@@ -14,7 +14,6 @@ func (b *Bot) Trigger(ctx telebot.Context) error {
 	}
 
 	fmt.Println(ctx.Message().TopicMessage)
-	fmt.Println(ctx.Message().ReplyTo.ID)
 	fmt.Println(ctx.Message().TopicCreated)
 
 	// Get triggers from Repository
