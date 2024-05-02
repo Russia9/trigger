@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/russia9/trigger/pkg/domain"
 	"gopkg.in/telebot.v3"
@@ -41,7 +42,7 @@ func (b *Bot) Add(ctx telebot.Context) error {
 	// Create a new trigger
 	trigger := domain.Trigger{
 		ID:      uuid.New().String(),
-		Trigger: AddCommand.FindAllStringSubmatch(ctx.Text(), -1)[0][1],
+		Trigger: AddCommand.FindStringSubmatch(ctx.Text())[1],
 		Chat:    ctx.Message().Chat.ID,
 	}
 
@@ -101,11 +102,15 @@ func (b *Bot) Add(ctx telebot.Context) error {
 		return b.Send(ctx, "треш")
 	}
 
+	fmt.Println(trigger.Trigger, trigger.ID, trigger.Type, trigger.Chat, trigger.Object, trigger.Entities)
+
 	// Save Trigger to Repository
 	err = b.repo.Create(context.Background(), &trigger)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(2)
 
 	return b.Send(ctx, "✅ Триггер добавлен")
 }
