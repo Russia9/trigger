@@ -41,10 +41,12 @@ func (b *Bot) Add(ctx telebot.Context) error {
 
 	// Create a new trigger
 	trigger := domain.Trigger{
-		ID:      uuid.New().String(),
+		ID:      uuid.NewString(),
 		Trigger: AddCommand.FindStringSubmatch(ctx.Text())[1],
 		Chat:    ctx.Message().Chat.ID,
 	}
+
+	fmt.Println(1)
 
 	// Check the reply message type
 	switch {
