@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"gopkg.in/telebot.v3"
 )
 
@@ -11,6 +12,10 @@ func (b *Bot) Trigger(ctx telebot.Context) error {
 	if !ctx.Message().FromGroup() {
 		return nil
 	}
+
+	fmt.Println(ctx.Message().TopicMessage)
+	fmt.Println(ctx.Message().ReplyTo.ID)
+	fmt.Println(ctx.Message().TopicCreated)
 
 	// Get triggers from Repository
 	triggers, err := b.repo.Get(context.Background(), ctx.Text(), ctx.Message().Chat.ID)
