@@ -15,15 +15,23 @@ func (b *Bot) Delete(ctx telebot.Context) error {
 		return b.Send(ctx, "🚫 Бот работает только в чатах")
 	}
 
-	// Get Chat member
-	member, err := b.bot.ChatMemberOf(ctx.Chat(), ctx.Message().Sender)
+	// Get Chat Admins
+	admins, err := b.bot.AdminsOf(ctx.Chat())
 	if err != nil {
 		return err
 	}
 
-	// Check if the user is an admin
-	if member.Role != telebot.Creator && member.Role != telebot.Administrator {
-		return b.Send(ctx, "🚫 Удалять триггеры может только админ")
+	// Check if sender is an admin
+	admin := false
+	for _, a := range admins {
+		if a.User.ID == ctx.Message().Sender.ID {
+			admin = true
+			break
+		}
+	}
+
+	if !admin {
+		return b.Send(ctx, "🚫 Добавлять триггеры может только админ")
 	}
 
 	// Check if the command is valid

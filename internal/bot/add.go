@@ -22,7 +22,7 @@ func (b *Bot) Add(ctx telebot.Context) error {
 		return b.Send(ctx, "ℹ Отправьте команду в ответ на сообщение, которое хотите сохранить")
 	}
 
-	// Get Chat member
+	// Get Chat Admins
 	admins, err := b.bot.AdminsOf(ctx.Chat())
 	if err != nil {
 		return err
