@@ -23,13 +23,21 @@ func (b *Bot) Add(ctx telebot.Context) error {
 	}
 
 	// Get Chat member
-	member, err := b.bot.ChatMemberOf(ctx.Chat(), ctx.Message().Sender)
+	admins, err := b.bot.AdminsOf(ctx.Chat())
 	if err != nil {
 		return err
 	}
 
-	// Check if the user is an admin
-	if member.Role != telebot.Creator && member.Role != telebot.Administrator {
+	// Check if sender is an admin
+	admin := false
+	for _, a := range admins {
+		if a.User.ID == ctx.Message().Sender.ID {
+			admin = true
+			break
+		}
+	}
+
+	if !admin {
 		return b.Send(ctx, "🚫 Добавлять триггеры может только админ")
 	}
 
