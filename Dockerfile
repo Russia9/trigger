@@ -1,4 +1,4 @@
-FROM golang:1.22
+FROM golang:1.23
 
 # Set app workdir
 WORKDIR /go/src/app
@@ -17,4 +17,3 @@ RUN go build -o app github.com/russia9/trigger/cmd/main
 
 # Run app
 CMD ["./app"]
-

@@ -1,19 +1,17 @@
-version: "3.3"
-
 services:
   mongo:
     image: mongo
     restart: always
-    env_file: ".env"
+    env_file: ".mongo.env"
     ports:
-      - "127.0.0.1:27020:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongodb_data:/data/db
 
   trigger:
     build: .
     restart: always
-    env_file: ".env"
+    env_file: ".trigger.env"
     depends_on:
       - mongo
 
